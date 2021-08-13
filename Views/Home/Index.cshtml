@@ -44,8 +44,8 @@
 
         var canvas = document.getElementById('PaintPad');
         var context = canvas.getContext('2d');
-        context.lineWidth = 2;
-        context.strokeStyle = 'yellow';
+        //context.lineWidth = 2;
+        //context.strokeStyle = 'yellow';
 
         function mouseDownEvent(e) {
             switch (e.which) {
@@ -57,16 +57,14 @@
             }
         }
 
-        
-
-        function drawLine(x1, y1, x2, y2) {
-            //context.beginPath();
-            //context.moveTo(x1 + 5, y1 + 5);
-            //context.lineTo(x2 + 5, y2 + 5);
-            //context.stroke();
-            context.drawImage(document.getElementById('point'), x1, y1);
-            context.drawImage(document.getElementById('point'), x2, y2);
-        }
+        //function drawLine(x1, y1, x2, y2) {
+        //    context.beginPath();
+        //    context.moveTo(x1 + 5, y1 + 5);
+        //    context.lineTo(x2 + 5, y2 + 5);
+        //    context.stroke();
+        //    context.drawImage(document.getElementById('point'), x1, y1);
+        //    context.drawImage(document.getElementById('point'), x2, y2);
+        //}
 
         function drawMarker() {
             for (let i = 0; i < points.length; i++) {
