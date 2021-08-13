@@ -35,11 +35,8 @@
 
     <script src="~/js/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script>
-        const image = document.getElementById('point');
-        let x = 0, lastX = 0;
-        let y = 0, lastY = 0;
-
         let points = new Array();
+        let x = 0, y = 0;
 
         var hubConnection = new signalR.HubConnectionBuilder().withUrl("/hubs").build();
 
@@ -47,59 +44,62 @@
 
         var canvas = document.getElementById('PaintPad');
         var context = canvas.getContext('2d');
+        context.lineWidth = 2;
+        context.strokeStyle = 'yellow';
 
         function mouseDownEvent(e) {
-            x = e.offsetX;
-            y = e.offsetY;
-            addPoint(x, y);
+            switch (e.which) {
+                case 1:
+                    x = e.offsetX;
+                    y = e.offsetY;
+                    addPoint(x, y);
+                    break;
+            }
         }
 
-        function addPoint(x, y) {
-            if (points.length > 0) {
-                firstTuple = points[0];
-                lastTuple = points[points.length - 1];
+        
 
-                context.lineWidth = 2;
-                context.strokeStyle = 'yellow';
+        function drawLine(x1, y1, x2, y2) {
+            //context.beginPath();
+            //context.moveTo(x1 + 5, y1 + 5);
+            //context.lineTo(x2 + 5, y2 + 5);
+            //context.stroke();
+            context.drawImage(document.getElementById('point'), x1, y1);
+            context.drawImage(document.getElementById('point'), x2, y2);
+        }
 
-                context.moveTo(lastTuple[0] + 5, lastTuple[1] + 5);
-                context.lineTo(x + 5, y + 5);
-                context.stroke();
-
-                if (points.length >= 2) {
-                    context.clearRect(0, 0, canvas.width, canvas.height);
-                    for (let i = 0; i < points.length; i++)
-                    {
-                        context.drawImage(image, points[i][0], points[i][1]);
-                        let next = i + 1;
-                        if (next != points.length) {
-                            context.moveTo(points[i][0] + 5, points[i][1] + 5);
-                            context.lineTo(points[next][0] + 5, points[next][1] + 5);
-                            context.stroke();
-                        }
-                        else {
-                            context.drawImage(image, x, y);
-                            context.moveTo(points[i][0] + 5, points[i][1] + 5);
-                            context.lineTo(x + 5, y + 5);
-                            context.stroke();
-
-                            context.moveTo(x + 5, y + 5);
-                            context.lineTo(points[0][0] + 5, points[0][1] + 5);
-                            context.stroke();
-                        }
-                    }
-                }
+        function drawMarker() {
+            for (let i = 0; i < points.length; i++) {
+                context.drawImage(document.getElementById('point'), points[i][0], points[i][1]);
             }
+        }
+        setInterval(drawMarker, 10);
+
+        function addPoint(x, y) {
+            //if (points.length != 0) {
+            //    context.clearRect(0, 0, canvas.width, canvas.height);
+            //    for (let i = 0; i < points.length; i++) {
+            //        let next = i + 1;
+            //        if (next != points.length) {
+            //            drawLine(points[i][0], points[i][1], points[next][0], points[next][1]);
+            //        }
+            //        else {
+            //            drawLine(points[i][0], points[i][1], x, y);
+            //        }
+            //    }
+            //    drawLine(x, y, points[0][0], points[0][1]);
+            //}
+            //else {
+            //    context.drawImage(document.getElementById('point'), x, y);
+            //}
 
             points.push([x, y]);
-
-            context.drawImage(image, x, y);
         }
 
         canvas.addEventListener('mousedown', mouseDownEvent);
 
         hubConnection.start().then(function () {
-            return console.error('started...');
+            console.error('started...');
         });
     </script>
 
