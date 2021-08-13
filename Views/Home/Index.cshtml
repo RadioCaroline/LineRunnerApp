@@ -23,10 +23,6 @@
         </nav>
     </header>
     
-    <div style="display:none">
-        <img id="point" src="/img/point.png" width="10" height="10" />
-    </div>
-
     <div class="container">
 
         <canvas id="PaintPad" width="600" height="600"></canvas>
@@ -44,8 +40,6 @@
 
         var canvas = document.getElementById('PaintPad');
         var context = canvas.getContext('2d');
-        //context.lineWidth = 2;
-        //context.strokeStyle = 'yellow';
 
         function mouseDownEvent(e) {
             switch (e.which) {
@@ -57,41 +51,43 @@
             }
         }
 
-        //function drawLine(x1, y1, x2, y2) {
-        //    context.beginPath();
-        //    context.moveTo(x1 + 5, y1 + 5);
-        //    context.lineTo(x2 + 5, y2 + 5);
-        //    context.stroke();
-        //    context.drawImage(document.getElementById('point'), x1, y1);
-        //    context.drawImage(document.getElementById('point'), x2, y2);
-        //}
+        function drawBall() {
+            context.beginPath();
+            context.arc(0, 0, 10, 0, Math.PI * 2);
+            context.fillStyle = "green";
+            context.fill();
+            context.closePath();
+        }
 
         function drawMarker() {
             for (let i = 0; i < points.length; i++) {
-                context.drawImage(document.getElementById('point'), points[i][0], points[i][1]);
+                context.beginPath();
+                context.arc(points[i][0], points[i][1], 5, 0, Math.PI * 2);
+                context.fillStyle = "red";
+                context.fill();
+                context.closePath();
+                drawBall();
             }
         }
-        setInterval(drawMarker, 10);
+        //setInterval(drawMarker, 100);
+
+        
+        function draw() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawMarker();
+        }
+
+        setInterval(draw, 10);
 
         function addPoint(x, y) {
-            //if (points.length != 0) {
-            //    context.clearRect(0, 0, canvas.width, canvas.height);
-            //    for (let i = 0; i < points.length; i++) {
-            //        let next = i + 1;
-            //        if (next != points.length) {
-            //            drawLine(points[i][0], points[i][1], points[next][0], points[next][1]);
-            //        }
-            //        else {
-            //            drawLine(points[i][0], points[i][1], x, y);
-            //        }
-            //    }
-            //    drawLine(x, y, points[0][0], points[0][1]);
-            //}
-            //else {
-            //    context.drawImage(document.getElementById('point'), x, y);
-            //}
-
             points.push([x, y]);
+        }
+
+        function getPositionAlongTheLine(x1, y1, x2, y2, percentage) {
+            return {
+                x: x1 * (1.0 - percentage) + x2 * percentage,
+                y: y1 * (1.0 - percentage) + y2 * percentage
+            };
         }
 
         canvas.addEventListener('mousedown', mouseDownEvent);
