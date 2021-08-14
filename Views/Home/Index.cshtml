@@ -31,19 +31,28 @@
 
     <script src="~/js/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script>
+        // Координаты меток, полученные по нажатию кнопки мыши
         let points = new Array();
+        // Текущие координаты
         let x = 0, y = 0;
 
-        var hubConnection = new signalR.HubConnectionBuilder().withUrl("/hubs").build();
-
-        hubConnection.on('addPoint', x, y);
-
+        // Область изображения и контекст
         var canvas = document.getElementById('PaintPad');
         var context = canvas.getContext('2d');
 
+        // По нажатию кнопки на область прорисовки,
+        // полученные координаты вписываем в коллекцию координат меток
+        function addPoint(x, y) {
+            points.push([x, y]);
+        }
+
+        // События на нажатие кнопки мыши 
         function mouseDownEvent(e) {
             switch (e.which) {
+                // События будут отслеживаться только по нажатию левой кнопки
                 case 1:
+                    // Получяем координаты мыши и 
+                    // отправляем в коллекцию координат меток
                     x = e.offsetX;
                     y = e.offsetY;
                     addPoint(x, y);
@@ -51,50 +60,30 @@
             }
         }
 
-        function drawBall() {
-            context.beginPath();
-            context.arc(0, 0, 10, 0, Math.PI * 2);
-            context.fillStyle = "green";
-            context.fill();
-            context.closePath();
-        }
+        // Фиксируем события нажатия кнопки мыши
+        canvas.addEventListener('mousedown', mouseDownEvent);
 
+        // Функция прорисовки маркеров на области изображения
         function drawMarker() {
+            // Проходим по всем координатам и рисуем точки
             for (let i = 0; i < points.length; i++) {
                 context.beginPath();
                 context.arc(points[i][0], points[i][1], 5, 0, Math.PI * 2);
                 context.fillStyle = "red";
                 context.fill();
                 context.closePath();
-                drawBall();
             }
         }
-        //setInterval(drawMarker, 100);
 
-        
+        // Функция прорисовки элементов
         function draw() {
+            // Очистка изображения
             context.clearRect(0, 0, canvas.width, canvas.height);
+            // Прорисовка маркеров для перемещения точек
             drawMarker();
         }
-
+        // Интервал обновления изображения
         setInterval(draw, 10);
-
-        function addPoint(x, y) {
-            points.push([x, y]);
-        }
-
-        function getPositionAlongTheLine(x1, y1, x2, y2, percentage) {
-            return {
-                x: x1 * (1.0 - percentage) + x2 * percentage,
-                y: y1 * (1.0 - percentage) + y2 * percentage
-            };
-        }
-
-        canvas.addEventListener('mousedown', mouseDownEvent);
-
-        hubConnection.start().then(function () {
-            console.error('started...');
-        });
     </script>
 
     <footer class="border-top footer text-muted">
