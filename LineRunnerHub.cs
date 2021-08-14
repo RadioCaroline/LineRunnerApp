@@ -12,8 +12,8 @@ namespace LineRunnerApp
         /// <summary>
         /// Добавление точки на пространство
         /// </summary>
-        /// <param name="X"></param>
-        /// <param name="Y"></param>
+        /// <param name="X">Координата на абциссе</param>
+        /// <param name="Y">Координата на ординате</param>
         /// <returns></returns>
         public async Task AddPoint(double X, double Y)
         {
