@@ -1,31 +1,40 @@
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/hubs")
+    .build();
+
 // Координаты меток, полученные по нажатию кнопки мыши
-let points = new Array();
+let markers = new Array();
 // Текущие координаты
 let x = 0, y = 0;
 // Начальные координаты маршрута точки на заданному отрезке
 let pointX = -7, pointY = -7;
-// Координаты окончания маршрута точки по заданному отрезку
+// Индекс маркера из коллекции 
 let nextMarkerIndex = 0;
+// Скорость передвижения точки между маркерами
 let speed = 5;
 
 // Область изображения и контекст
 var canvas = document.getElementById('PaintPad');
 var context = canvas.getContext('2d');
 
+connection.on("addMarker", function (x, y) {
+    addMarker(x, y);
+});
+
 // По нажатию кнопки на область прорисовки,
 // полученные координаты вписываем в коллекцию координат меток
-function addPoint(x, y) {
-    points.push([x, y]);
+function addMarker(x, y) {
+    markers.push([x, y]);
 
     // Если в коллекции еще не было координат, 
     // то ставим начальные координаты точки координаты первого маркера
-    if (points.length == 1) {
+    if (markers.length == 1) {
         pointX = x;
         pointY = y;
     }
     // Если в коллекции есть одна координата, 
     // то ставим следующую координату точки координаты второго маркера
-    if (points.length == 2) {
+    if (markers.length == 2) {
         nextMarkerIndex = 1;
     }
 }
@@ -39,18 +48,17 @@ function mouseDownEvent(e) {
             // отправляем в коллекцию координат меток
             x = e.offsetX;
             y = e.offsetY;
-            addPoint(x, y);
+            // addMarker(x, y);
+            connection.invoke("AddMarker", x, y);
             break;
     }
 }
 
-// Фиксируем события нажатия кнопки мыши
-canvas.addEventListener('mousedown', mouseDownEvent);
-
+// Функция для изменения координат передвигающейся точки
 function getPointPosition(x1, y1, x2, y2) {
+    // Мои наилучшие пожелания Пифагору с его равными штанами
     let dx = x2 - x1;
     let dy = y2 - y1;
-
     let d = Math.sqrt(dx * dx + dy * dy);
 
     return {
@@ -71,10 +79,12 @@ function drawPoint(x, y) {
 }
 
 function refreshPoint() {
-    if (points.length >= 2) {
+    if (markers.length >= 2) {
         // Получаем необходимые изменения для передвижения точки
-        let nextPointX = points[nextMarkerIndex][0];
-        let nextPointY = points[nextMarkerIndex][1];
+        let nextPointX = markers[nextMarkerIndex][0];
+        let nextPointY = markers[nextMarkerIndex][1];
+
+        connection.invoke("GetPointPosition", pointX, pointY, nextPointX, nextPointY);
         let point = getPointPosition(pointX, pointY, nextPointX, nextPointY);
         // Применяем изменения координат
         pointX += point.dx;
@@ -86,17 +96,17 @@ function refreshPoint() {
         /* Пока что если текущая Х или У точки достигают Х или У координаты конца текущего маршрута, 
          * то в зависимости от того, есть ли в коллекции маркеров еще маркер или это был последний, 
          * назначаем значению nextMarkerIndex индекс следующего маркера.*/
-        if (Math.trunc(pointX) == points[nextMarkerIndex][0] ||
-            Math.trunc(pointX) + 1 == points[nextMarkerIndex][0] ||
-            Math.trunc(pointX) - 1 == points[nextMarkerIndex][0] ||
-            Math.trunc(pointY) == points[nextMarkerIndex][1] ||
-            Math.trunc(pointY) + 1 == points[nextMarkerIndex][1] ||
-            Math.trunc(pointY) - 1 == points[nextMarkerIndex][1]) {
+        if (Math.trunc(pointX) == markers[nextMarkerIndex][0] ||
+            Math.trunc(pointX) + 1 == markers[nextMarkerIndex][0] ||
+            Math.trunc(pointX) - 1 == markers[nextMarkerIndex][0] ||
+            Math.trunc(pointY) == markers[nextMarkerIndex][1] ||
+            Math.trunc(pointY) + 1 == markers[nextMarkerIndex][1] ||
+            Math.trunc(pointY) - 1 == markers[nextMarkerIndex][1]) {
 
-            pointX = points[nextMarkerIndex][0];
-            pointY = points[nextMarkerIndex][1];
+            pointX = markers[nextMarkerIndex][0];
+            pointY = markers[nextMarkerIndex][1];
 
-            if (nextMarkerIndex + 1 >= points.length) {
+            if (nextMarkerIndex + 1 >= markers.length) {
                 nextMarkerIndex = 0;
             }
             else {
@@ -107,7 +117,7 @@ function refreshPoint() {
 }
 
 // Рисуем маркер в области нажатия левой кнопки мыши
-function drawMarkerPoint(mx, my) {
+function drawMarker(mx, my) {
     context.beginPath();
     // Параметры маркера
     context.arc(mx, my, 10, 0, Math.PI * 2);
@@ -129,26 +139,26 @@ function drawMarkerLine(x1, y1, x2, y2) {
     context.stroke();
 
     // После линий рисуем уже сами маркеры
-    drawMarkerPoint(x1, y1);
-    drawMarkerPoint(x2, y2);
+    drawMarker(x1, y1);
+    drawMarker(x2, y2);
 }
 
 // Функция прорисовки маркеров на области изображения
-function drawMarkersPath() {
-    // Проходим по всем координатам и рисуем точки
-    for (let i = 0; i < points.length; i++) {
+function drawMarkersRoute() {
+    // Проходим по всем координатам и рисуем маркеры
+    for (let i = 0; i < markers.length; i++) {
         let next = i + 1;
-        // Если текущая точка не последняя, то рисуем маршрут от нее до следующей точки,
-        // если последняя, что рисуем маршрут от неё до начальной точки
-        let startX = points[i][0], startY = points[i][1];
+        // Если текущий маркер не последний, то рисуем маршрут от нее до следующего маркера,
+        // если последний, что рисуем маршрут от него до начального маркера
+        let startX = markers[i][0], startY = markers[i][1];
         let finishX = 0, finishY = 0;
-        if (next != points.length) {
-            finishX = points[next][0];
-            finishY = points[next][1];
+        if (next != markers.length) {
+            finishX = markers[next][0];
+            finishY = markers[next][1];
         }
         else {
-            finishX = points[0][0];
-            finishY = points[0][1];
+            finishX = markers[0][0];
+            finishY = markers[0][1];
         }
         drawMarkerLine(startX, startY, finishX, finishY);
     }
@@ -163,7 +173,14 @@ function draw() {
     refreshPoint();
 
     // Прорисовка маркеров для перемещения точек
-    drawMarkersPath();
+    drawMarkersRoute();
+
+    // connection.invoke("draw");
 }
 // Интервал обновления изображения
 setInterval(draw, 100);
+
+connection.start().then(function () {
+    // Фиксируем события нажатия кнопки мыши
+    canvas.addEventListener('mousedown', mouseDownEvent);
+});

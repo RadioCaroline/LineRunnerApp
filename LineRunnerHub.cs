@@ -1,5 +1,7 @@
-﻿using LineRunnerApp.Models;
+﻿using LineRunnerApp.Helpers;
+using LineRunnerApp.Models;
 using Microsoft.AspNetCore.SignalR;
+using System;
 using System.Threading.Tasks;
 
 namespace LineRunnerApp
@@ -9,16 +11,27 @@ namespace LineRunnerApp
     /// </summary>
     public class LineRunnerHub : Hub
     {
-        /// <summary>
-        /// Добавление точки на пространство
-        /// </summary>
-        /// <param name="X">Координата на абциссе</param>
-        /// <param name="Y">Координата на ординате</param>
-        /// <returns></returns>
-        public async Task AddPoint(double X, double Y)
+        public async Task AddMarker(double X, double Y)
         {
-            // Отправляем команду Добавить точку для всех клиентов
-            await Clients.All.SendAsync("addPoint", X, Y);
+            RunnerCollections.MarkerAxes.Add(new Tuple<double, double>( X, Y ));
+
+            // Отправляем команду Добавить маркер для всех клиентов
+            await Clients.All.SendAsync("addMarker", X, Y); 
+        }
+
+        public async Task Draw()
+        {
+            await Clients.All.SendAsync("draw");
+        }
+
+        public async Task GetPointPosition(
+            double pointX, double pointY, 
+            double nextPointX, double nextPointY)
+        {
+            Tuple<double, double> positions = 
+                RunnerRoutes.PointPosition(pointX, pointY, nextPointX, nextPointY);
+
+            await Clients.All.SendAsync("draw");
         }
     }
 }
