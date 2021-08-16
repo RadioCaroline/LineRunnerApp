@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Öchpochmak Development</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" />
     
     <style>
         canvas {
@@ -22,20 +21,33 @@
             </div>
         </nav>
     </header>
-    
-    <div class="container">
-        <canvas id="PaintPad" width="600" height="600"></canvas>
-    </div>
 
-    <script src="~/js/microsoft/signalr/dist/browser/signalr.min.js"></script>
-    <script src="~/js/runner.js"></script>
+    <div class="container">
+        <div class="row">
+
+            <div class="col-sm">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Введите логин" id="login" aria-describedby="basic-addon2">
+                    <div class="input-group-append">
+                        <input class="btn btn-outline-secondary" id="sendLogin" type="button" value="Отправить" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm">
+                <canvas id="PaintPad" width="600" height="600"></canvas>
+            </div>
+
+        </div>
+    </div>
 
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2021 - LineRunnerApp
         </div>
     </footer>
-
+    <script src="~/js/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/runner.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>

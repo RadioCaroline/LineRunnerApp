@@ -1,3 +1,5 @@
+"use strict";
+
 const connection = new signalR.HubConnectionBuilder()
     .withUrl("/hubs")
     .build();
@@ -11,7 +13,14 @@ let pointX = -7, pointY = -7;
 // Индекс маркера из коллекции 
 let nextMarkerIndex = 0;
 // Скорость передвижения точки между маркерами
-let speed = 5;
+let speed = 3;
+
+//////////////////////////////////////
+document.getElementById('sendLogin').addEventListener('click', function (e) {
+    let login = document.getElementById('login').value;
+    connection.invoke('Authorize', login);
+});
+//////////////////////////////////////
 
 // Область изображения и контекст
 var canvas = document.getElementById('PaintPad');
@@ -39,13 +48,23 @@ function addMarker(x, y) {
     }
 }
 
+// Заполнение коллекции маркеров при загрузке страницы
+function fillMarkers(savedMarkers) {
+    // Если есть маркеры, грузим в markers
+    if (savedMarkers.length > 0) {
+        markers = savedMarkers;
+    }
+    else {
+        markers = new Array();
+    }
+}
+
 // События на нажатие кнопки мыши 
 function mouseDownEvent(e) {
     switch (e.which) {
         // События будут отслеживаться только по нажатию левой кнопки
         case 1:
-            // Получяем координаты мыши и 
-            // отправляем в коллекцию координат меток
+            // Получяем координаты мыши и отправляем в коллекцию координат меток
             x = e.offsetX;
             y = e.offsetY;
             // addMarker(x, y);
@@ -83,8 +102,6 @@ function refreshPoint() {
         // Получаем необходимые изменения для передвижения точки
         let nextPointX = markers[nextMarkerIndex][0];
         let nextPointY = markers[nextMarkerIndex][1];
-
-        connection.invoke("GetPointPosition", pointX, pointY, nextPointX, nextPointY);
         let point = getPointPosition(pointX, pointY, nextPointX, nextPointY);
         // Применяем изменения координат
         pointX += point.dx;
@@ -93,9 +110,11 @@ function refreshPoint() {
         drawPoint(pointX, pointY);
 
         // Пока не очень понимаю, что принять признаком достижения маршрута
-        /* Пока что если текущая Х или У точки достигают Х или У координаты конца текущего маршрута, 
+        /* Пока что если текущая Х или У точки достигают Х или У координаты конца текущего отрезка, 
          * то в зависимости от того, есть ли в коллекции маркеров еще маркер или это был последний, 
-         * назначаем значению nextMarkerIndex индекс следующего маркера.*/
+         * назначаем значению nextMarkerIndex индекс следующего маркера. Нужно учитывать, что 
+         * координаты являются вещественными числами, поэтому сложно принять в сравнение какое-то точное число,
+         * так что отсекаем дробную часть от координат точки.*/
         if (Math.trunc(pointX) == markers[nextMarkerIndex][0] ||
             Math.trunc(pointX) + 1 == markers[nextMarkerIndex][0] ||
             Math.trunc(pointX) - 1 == markers[nextMarkerIndex][0] ||
@@ -103,9 +122,12 @@ function refreshPoint() {
             Math.trunc(pointY) + 1 == markers[nextMarkerIndex][1] ||
             Math.trunc(pointY) - 1 == markers[nextMarkerIndex][1]) {
 
+            // Началом нового отрезка будут координаты конца предыдущего
             pointX = markers[nextMarkerIndex][0];
             pointY = markers[nextMarkerIndex][1];
 
+            // В зависимости от того, будут ли еще маркеры и это был последний,
+            // назначаем индекс следующего маркера
             if (nextMarkerIndex + 1 >= markers.length) {
                 nextMarkerIndex = 0;
             }
@@ -178,7 +200,7 @@ function draw() {
     // connection.invoke("draw");
 }
 // Интервал обновления изображения
-setInterval(draw, 100);
+setInterval(draw, 10);
 
 connection.start().then(function () {
     // Фиксируем события нажатия кнопки мыши
