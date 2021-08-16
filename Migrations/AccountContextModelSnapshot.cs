@@ -19,6 +19,30 @@ namespace LineRunnerApp.Migrations
                 .HasAnnotation("ProductVersion", "5.0.9")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
+            modelBuilder.Entity("LineRunnerApp.Models.UserEventModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("EventTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Events");
+                });
+
             modelBuilder.Entity("LineRunnerApp.Models.UserModel", b =>
                 {
                     b.Property<int>("Id")
@@ -26,7 +50,7 @@ namespace LineRunnerApp.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<DateTime?>("LastLogin")
+                    b.Property<DateTime>("LastLogin")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Login")
@@ -42,9 +66,25 @@ namespace LineRunnerApp.Migrations
                         new
                         {
                             Id = 1,
-                            LastLogin = new DateTime(2021, 8, 16, 18, 30, 35, 307, DateTimeKind.Local).AddTicks(2870),
+                            LastLogin = new DateTime(2021, 8, 16, 19, 29, 15, 54, DateTimeKind.Local).AddTicks(5213),
                             Login = "Admin"
                         });
+                });
+
+            modelBuilder.Entity("LineRunnerApp.Models.UserEventModel", b =>
+                {
+                    b.HasOne("LineRunnerApp.Models.UserModel", "User")
+                        .WithMany("Events")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LineRunnerApp.Models.UserModel", b =>
+                {
+                    b.Navigation("Events");
                 });
 #pragma warning restore 612, 618
         }

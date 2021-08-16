@@ -24,12 +24,25 @@
 
     <div class="container">
         <div class="row">
-
+            
             <div class="col-sm">
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="Введите логин" id="login" aria-describedby="basic-addon2">
-                    <div class="input-group-append">
-                        <input class="btn btn-outline-secondary" id="sendLogin" type="button" value="Отправить" />
+                <div class="row">
+
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Введите логин" id="login" aria-describedby="basic-addon2">
+                        <div class="input-group-append">
+                            <input class="btn btn-outline-secondary" id="sendLogin" type="button" value="Отправить" />
+                        </div>
+                    </div>
+                    <div class="w-100"></div>
+                    <div class="input-group mb-3" id="selectionMarker" style="visibility: collapse;">
+                        <label class="mr-sm-2" for="inlineFormCustomSelect">Маркеры</label>
+                        <select class="custom-select mr-sm-2" id="markerSelect">
+                            <option selected value="0" id="sdMarker0">Выбрать все</option>
+                        </select>
+                        <div class="input-group-append">
+                            <input class="btn btn-outline-secondary" id="removeMarker" type="button" value="Удалить" />
+                        </div>
                     </div>
                 </div>
             </div>

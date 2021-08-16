@@ -8,6 +8,7 @@ namespace LineRunnerApp.Models
     public class AccountContext : DbContext
     {
         public DbSet<UserModel> Users { get; set; }
+        public DbSet<UserEventModel> Events { get; set; }
 
         public AccountContext()
         {
@@ -38,6 +39,13 @@ namespace LineRunnerApp.Models
             // Закидываем его в базу при первом обращении
             modelBuilder.Entity<UserModel>()
                 .HasData(new UserModel[] { adminUser });
+
+            // Каскадное удаление истории пользователя
+            // (я без понятия зачем оно тут без функции удаления)
+            modelBuilder.Entity<UserModel>()
+                .HasMany(u => u.Events)
+                .WithOne(e => e.User)
+                .OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
         }
