@@ -1,7 +1,12 @@
 "use strict";
 
+//////////////////////////////////////
+let login = '';
+let token = '';
+//////////////////////////////////////
+
 const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/hubs")
+    .withUrl("/hubs", { accessTokenFactory: () => token })
     .build();
 
 // Координаты меток, полученные по нажатию кнопки мыши
@@ -14,13 +19,6 @@ let pointX = -7, pointY = -7;
 let nextMarkerIndex = 0;
 // Скорость передвижения точки между маркерами
 let speed = 3;
-
-//////////////////////////////////////
-document.getElementById('sendLogin').addEventListener('click', function (e) {
-    let login = document.getElementById('login').value;
-    connection.invoke('Authorize', login);
-});
-//////////////////////////////////////
 
 // Область изображения и контекст
 var canvas = document.getElementById('PaintPad');
@@ -202,7 +200,25 @@ function draw() {
 // Интервал обновления изображения
 setInterval(draw, 10);
 
-connection.start().then(function () {
-    // Фиксируем события нажатия кнопки мыши
-    canvas.addEventListener('mousedown', mouseDownEvent);
+document.getElementById('sendLogin').addEventListener('click', function (e) {
+    login = document.getElementById('login').value;
+    var request = new XMLHttpRequest();
+    request.open("POST", "/token", true);
+    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    request.addEventListener("load", function () {
+        if (request.status < 400) {
+            let data = JSON.parse(request.response);
+            token = data.access_token;
+            login = data.username;
+
+            document.getElementById('login').disabled = true;
+            document.getElementById('sendLogin').disabled = true;
+
+            connection.start().then(function () {
+                // Фиксируем события нажатия кнопки мыши
+                canvas.addEventListener('mousedown', mouseDownEvent);
+            });
+        }
+    });
+    request.send("username=" + login);
 });

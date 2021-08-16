@@ -1,5 +1,6 @@
 ﻿using LineRunnerApp.Helpers;
 using LineRunnerApp.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,21 +13,13 @@ namespace LineRunnerApp
     /// </summary>
     public class LineRunnerHub : Hub
     {
+        [Authorize]
         public async Task AddMarker(double X, double Y)
         {
             RunnerCollections.MarkerAxes.Add(new Tuple<double, double>( X, Y ));
 
             // Отправляем команду Добавить маркер для всех клиентов
             await Clients.All.SendAsync("addMarker", X, Y); 
-        }
-
-        public async Task Authorize(string login)
-        {
-            using AccountContext db = new();
-            UserModel user = 
-                await db.Users.FirstOrDefaultAsync(u => u.Login == login);
-
-            await Clients.All.SendAsync("authUser", login);
         }
 
         public async Task FillMarkers()
@@ -39,7 +32,6 @@ namespace LineRunnerApp
             await Clients.All.SendAsync("draw");
         }
 
-       
 
         //public async Task GetPointPosition(
         //    double pointX, double pointY, 

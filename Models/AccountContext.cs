@@ -12,14 +12,17 @@ namespace LineRunnerApp.Models
         public AccountContext()
         {
             // Создаем базу при первом обращении
-            Database.EnsureCreated();
+            // Database.EnsureCreated();
         }
 
         protected override void OnConfiguring(
             DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql(
-                @"Host=storage;Port=5102;Database=runnerDB;Username=postgres;Password=Qwerty123");
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseNpgsql(
+                    @"Host=storage;Port=5102;Database=postgres;Username=postgres;Password=Qwerty123");
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -27,6 +30,7 @@ namespace LineRunnerApp.Models
             // Создаем одного пользователя
             UserModel adminUser = new()
             {
+                Id = 1,
                 Login = "Admin",
                 LastLogin = System.DateTime.Now
             };
