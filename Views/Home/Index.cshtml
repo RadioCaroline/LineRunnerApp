@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Öchpochmak Development</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.20/css/dataTables.bootstrap4.min.css" />
     <style>
         canvas {
             background-color: lightblue;
@@ -24,14 +26,14 @@
 
     <div class="container">
         <div class="row">
-            
+
             <div class="col-sm">
                 <div class="row">
 
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" placeholder="Введите логин" id="login" aria-describedby="basic-addon2">
                         <div class="input-group-append">
-                            <input class="btn btn-outline-secondary" id="sendLogin" type="button" value="Отправить" />
+                            <input class="btn btn-outline-secondary" id="sendLogin" type="button" value="Войти" />
                         </div>
                     </div>
                     <div class="w-100"></div>
@@ -41,9 +43,37 @@
                             <option selected value="0" id="sdMarker0">Выбрать все</option>
                         </select>
                         <div class="input-group-append">
-                            <input class="btn btn-outline-secondary" id="removeMarker" type="button" value="Удалить" />
+                            <input class="btn btn-outline-secondary" id="removeMarker" type="button" value="Удалить маркер" />
                         </div>
                     </div>
+                    <div class="w-100"></div>
+                    <table class="table table-striped table-bordered table-sm" id="eventTable" style="visibility: collapse;">
+                        <thead>
+                            <tr>
+                                <th class="th-sm" scope="col">Пользователь</th>
+                                <th class="th-sm" scope="col">Действие</th>
+                                <th class="th-sm" scope="col">Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Mark</td>
+                                <td>Otto</td>
+                                <td>mdo</td>
+                            </tr>
+                            <tr>
+                                <td>Carry</td>
+                                <td>Green</td>
+                                <td>aky</td>
+                            </tr>
+                            <tr>
+                                <td>Gary</td>
+                                <td>Lewis</td>
+                                <td>mad</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
                 </div>
             </div>
 
@@ -63,5 +93,8 @@
     <script src="~/js/runner.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
 </body>
 </html>

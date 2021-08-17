@@ -56,6 +56,11 @@ namespace LineRunnerApp.Controllers
             });
         }
 
+        /// <summary>
+        /// Получаем identity
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
         private static async Task<ClaimsIdentity> GetIdentityAsync(string username)
         {
             // По заданию не вполне ясно, должны ли существовать пользователи в базе, 
@@ -72,6 +77,7 @@ namespace LineRunnerApp.Controllers
             }
             else
             {
+                // Создаем нового пользователя
                 person = new UserModel
                 {
                     Login = username,
@@ -81,7 +87,7 @@ namespace LineRunnerApp.Controllers
                 await db.SaveChangesAsync();
             }
 
-            // Авторизуем через jwt
+            // Создаем claim для авторизации (без ролей)
             List<Claim> claims = new()
             {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, person.Login)
@@ -90,6 +96,15 @@ namespace LineRunnerApp.Controllers
             ClaimsIdentity claimsIdentity = new(claims, "Token",
                 ClaimsIdentity.DefaultNameClaimType,
                 ClaimsIdentity.DefaultRoleClaimType);
+
+            // После авторизации заносим событие в базу данных
+            db.Events.Add(new UserEventModel
+            {
+                UserId = person.Id,
+                Description = "Пользователь " + person.Login + " авторизовался.",
+                EventTime = DateTime.Now
+            });
+            await db.SaveChangesAsync();
 
             return claimsIdentity;
         }

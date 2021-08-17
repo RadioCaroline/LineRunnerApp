@@ -1,14 +1,9 @@
 "use strict";
 
 //////////////////////////////////////
+// Данные авторизации пользователя
 let login = '';
 let token = '';
-//////////////////////////////////////
-
-const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/hubs", { accessTokenFactory: () => token })
-    .build();
-
 // Координаты меток, полученные по нажатию кнопки мыши
 let markers = new Array();
 // Текущие координаты
@@ -20,7 +15,12 @@ let nextMarkerIndex = 0;
 // Скорость передвижения точки между маркерами
 let speed = 3;
 // Индекс маркера на удаление
-let selectedValue = 0;
+let selectedRemoveValue = 0;
+//////////////////////////////////////
+
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/hubs", { accessTokenFactory: () => token })
+    .build();
 
 // Область изображения и контекст
 var canvas = document.getElementById('PaintPad');
@@ -47,13 +47,7 @@ function addMarker(x, y, fill = false) {
         nextMarkerIndex = 1;
     }
 
-    var selectMarker = document.getElementById('markerSelect');
-    var option = document.createElement('option');
-    option.setAttribute("Value", markers.length);
-    let optionId = 'sdMarker' + markers.length;
-    option.setAttribute("id", optionId);
-    option.text = '{' + x + ';' + y + '}';
-    selectMarker.appendChild(option);
+    fillMarkerSelection();
 
     if (fill == true) {
         let eventMessage = 'Пользователь ' + login + ' добавил новый маркер с координатами {' + x + '; ' + y + '}';
@@ -110,6 +104,7 @@ function drawPoint(x, y) {
     context.closePath();
 }
 
+// Перерисовка изображения
 function refreshPoint() {
     if (markers.length >= 2) {
         // Получаем необходимые изменения для передвижения точки
@@ -129,12 +124,12 @@ function refreshPoint() {
          * назначаем значению nextMarkerIndex индекс следующего маркера. Нужно учитывать, что 
          * координаты являются вещественными числами, поэтому сложно принять в сравнение какое-то точное число,
          * так что отсекаем дробную часть от координат точки.*/
-        if (Math.trunc(pointX) == markers[nextMarkerIndex][0] ||
-            Math.trunc(pointX) + 1 == markers[nextMarkerIndex][0] ||
-            Math.trunc(pointX) - 1 == markers[nextMarkerIndex][0] ||
-            Math.trunc(pointY) == markers[nextMarkerIndex][1] ||
-            Math.trunc(pointY) + 1 == markers[nextMarkerIndex][1] ||
-            Math.trunc(pointY) - 1 == markers[nextMarkerIndex][1]) {
+        if ((Math.trunc(pointX) == markers[nextMarkerIndex][0] ||
+             Math.trunc(pointX) + 1 == markers[nextMarkerIndex][0] ||
+             Math.trunc(pointX) - 1 == markers[nextMarkerIndex][0]) &&
+            (Math.trunc(pointY) == markers[nextMarkerIndex][1] ||
+             Math.trunc(pointY) + 1 == markers[nextMarkerIndex][1] ||
+             Math.trunc(pointY) - 1 == markers[nextMarkerIndex][1])) {
 
             // Началом нового отрезка будут координаты конца предыдущего
             pointX = markers[nextMarkerIndex][0];
@@ -154,13 +149,13 @@ function refreshPoint() {
 
 // Рисуем маркер в области нажатия левой кнопки мыши
 function drawMarker(mx, my) {
-    selectedValue = parseInt(document.getElementById('markerSelect').value);
+    selectedRemoveValue = parseInt(document.getElementById('markerSelect').value);
     context.beginPath();
     // Если выбран какой-то маркер на удаление, 
     // он выделяется красным цветом и бОльшим размером
-    if (selectedValue > 0 &&
-        markers[selectedValue - 1][0] == mx &&
-        markers[selectedValue - 1][1] == my) {
+    if (selectedRemoveValue > 0 &&
+        markers[selectedRemoveValue - 1][0] == mx &&
+        markers[selectedRemoveValue - 1][1] == my) {
         // Параметры удаляемого маркера
         context.arc(mx, my, 15, 0, Math.PI * 2);
         // Цвет удаляемого маркера
@@ -230,50 +225,123 @@ function draw() {
 // Интервал обновления изображения
 setInterval(draw, 10);
 
-document.getElementById('removeMarker').addEventListener('click', function (e) {
-    connection.invoke("RemoveMarker",
-        selectedValue,
-        markers[selectedValue - 1][0],
-        markers[selectedValue - 1][1]);
+connection.on("removeMarkerFromCanvas", function (markerIndex) {
+    removeMarkerFromCanvas(markerIndex);
 });
 
-function removeMarker(markerIndex) {
+/**************************** Удаление маркеров ****************************/
+// Функция заполнения комбобокса с координатами маркеров для удаления
+function fillMarkerSelection(flush = false) {
+    // Получаем нужный селектор
+    var selectMarker = document.getElementById('markerSelect');
+
+    // Полностью его очищаем
+    while (selectMarker.childNodes.length > 0) {
+        selectMarker.removeChild(selectMarker.lastChild);
+    }
+
+    // Поумолчанию первым должен быть выбор все объектов
+    var option = document.createElement('option');
+    option.setAttribute("Value", 0);
+    let optionId = 'sdMarker' + 0;
+    option.setAttribute("id", optionId);
+    option.text = 'Выбрать все';
+    selectMarker.appendChild(option);
+
+    // Далее идем по коллекции маркеров и добавляем существущие маркеры 
+    if (markers.length != 0) {
+        for (let i = 0; i < markers.length; i++) {
+            let mlen = i + 1;
+
+            var option = document.createElement('option');
+            option.setAttribute("Value", mlen);
+            let optionId = 'sdMarker' + mlen;
+            option.setAttribute("id", optionId);
+            option.text = '{' + markers[i][0] + ';' + markers[i][1] + '}';
+            selectMarker.appendChild(option);
+        }
+    }
+}
+
+function removeMarkerFromCanvas(markerIndex) {
     let eventMessage = '';
+    // Действия на тот случай, если следующим маркером, к которому движется точка, удаляется.
     if (markerIndex == 0) {
         eventMessage = 'Пользователь ' + login + ' удалил все маркеры';
-        markers.remove();
+        for (let index = markers.length; index > 0; index--) {
+            markers.pop();
+        }
+        pointX = -7;
+        pointY = -7;
+
+        nextMarkerIndex = 0;
     }
     else {
-        markers.splice(markerIndex - 1);
+        if (nextMarkerIndex == markerIndex - 1) {
+            if (nextMarkerIndex != markers.length) {
+                nextMarkerIndex += 1;
+            }
+            else {
+                nextMarkerIndex = 0;
+            }
+        }
+
+        markers.splice(markerIndex - 1, 1);
         eventMessage = 'Пользователь ' + login
-            + ' удалил маркер с координатами {' + markers[selectedValue - 1][0]
-            + '; ' + markers[selectedValue - 1][1] + '}';
+            + ' удалил маркер с координатами {' + markers[selectedRemoveValue - 1][0]
+            + '; ' + markers[selectedRemoveValue - 1][1] + '}';
     }
-   
+    fillMarkerSelection(true);
     connection.invoke("RecordEvent", login, eventMessage);
 }
 
-// Нажатие кнопки Отправить запускает механизм авторизации
+/**************************** Удаление маркеров ****************************/
+// Нажатие кнопки Удалить маркер
+document.getElementById('removeMarker').addEventListener('click', function (e) {
+    if (selectedRemoveValue == 0) {
+        connection.invoke("RemoveMarker", selectedRemoveValue, 0.0, 0.0);
+    }
+    else {
+        connection.invoke("RemoveMarker",
+            selectedRemoveValue,
+            markers[selectedRemoveValue - 1][0],
+            markers[selectedRemoveValue - 1][1]);
+    }
+});
+
+// Нажатие кнопки Войти запускает механизм авторизации
 document.getElementById('sendLogin').addEventListener('click', function (e) {
     login = document.getElementById('login').value;
+    // Запрос на форму авторизации 
     var request = new XMLHttpRequest();
+    // Запрос идет на /token
     request.open("POST", "/token", true);
     request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     request.addEventListener("load", function () {
+        // Смотрим нет ли ошибок
         if (request.status < 400) {
+            // Парсим ответ
             let data = JSON.parse(request.response);
+            // При авторизации нам возвращаются логин, токен и коллекция маркеров
             token = data.access_token;
             login = data.username;
 
-            document.getElementById('login').disabled = true;
+            // Включаем скрытые элементы на форме
+            // Выключаем форму для авторизации
+            document.getElementById('login').disabled = true;                           
             document.getElementById('sendLogin').disabled = true;
+            // Включаем форму с выбором координат маркеров на удаление
             document.getElementById('selectionMarker').style.visibility = "visible";
+            // Включаем форму с таблицей событий
+            document.getElementById('eventTable').style.visibility = "visible";
 
             // Если есть существующие координаты, то тащим их коллекцию markers.
             if (data.axes.length > 0) {
                 for (let i = 0; i < data.axes.length; i++) {
                     let currentX = data.axes[i].item1;
                     let currentY = data.axes[i].item2;
+                    // Используем функцию addMarker 
+                    // (флаг true нужен для того, чтобы отключить события занесения координат маркеров в базу данных)
                     addMarker(currentX, currentY, true);
                     // markers.push([currentX, currentY]);
                 }
@@ -285,5 +353,6 @@ document.getElementById('sendLogin').addEventListener('click', function (e) {
             });
         }
     });
+    // Отправляем запрос
     request.send("username=" + login);
 });

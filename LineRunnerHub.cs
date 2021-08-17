@@ -67,7 +67,7 @@ namespace LineRunnerApp
             {
                 RunnerCollections.MarkerAxes.Remove(new Tuple<double, double>(X, Y));
             }
-            await Clients.All.SendAsync("removeMarker", selectedMarker);
+            await Clients.All.SendAsync("removeMarkerFromCanvas", selectedMarker);
         }
 
         public async Task Draw()
