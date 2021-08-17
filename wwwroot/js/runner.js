@@ -28,6 +28,7 @@ const connection = new signalR.HubConnectionBuilder()
 var canvas = document.getElementById('PaintPad');
 var context = canvas.getContext('2d');
 
+/**************************** Сортировка в таблице ****************************/
 function sortHeadTable(event) {
     var target = event.target.id;
 
@@ -64,6 +65,7 @@ function updateTableEvents(tableEvents) {
     }
 }
 
+/**************************** Добавление маркеров ****************************/
 connection.on("addMarker", function (x, y) {
     addMarker(x, y, true);
 });

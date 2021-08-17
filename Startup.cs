@@ -17,6 +17,8 @@ namespace LineRunnerApp
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+
+            // Загружает точки из базы данных
             using AccountContext db = new();
             RunnerCollections.MarkerAxes = 
                 db.Axes.Select(a => new System.Tuple<double, double>(a.XPoint, a.YPoint)).ToList();

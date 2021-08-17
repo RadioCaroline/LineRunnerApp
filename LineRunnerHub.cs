@@ -41,7 +41,6 @@ namespace LineRunnerApp
         /// <summary>
         /// Запись события, произведенное пользователем
         /// </summary>
-        /// <param name="login"></param>
         /// <param name="eventMessage"></param>
         /// <returns></returns>
         [Authorize]
