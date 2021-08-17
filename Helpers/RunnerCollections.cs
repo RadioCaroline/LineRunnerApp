@@ -7,6 +7,6 @@ namespace LineRunnerApp.Helpers
     public static class RunnerCollections
     {
         public static List<Tuple<double, double>> MarkerAxes = new();
-        public static List<UserEventModel> Events = new();
+        public static List<TableEvent> Events = new();
     }
 }

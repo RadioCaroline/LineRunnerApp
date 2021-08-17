@@ -6,6 +6,7 @@ let login = '';
 let token = '';
 // Координаты меток, полученные по нажатию кнопки мыши
 let markers = new Array();
+let events = new Array();
 // Текущие координаты
 let x = 0, y = 0;
 // Начальные координаты маршрута точки на заданному отрезке
@@ -26,8 +27,18 @@ const connection = new signalR.HubConnectionBuilder()
 var canvas = document.getElementById('PaintPad');
 var context = canvas.getContext('2d');
 
+connection.on("updateTableEvents", function (tableEvents) {
+    updateTableEvents(tableEvents);
+});
+
+function updateTableEvents(tableEvents) {
+    if (tableEvents.length > 0) {
+        events = tableEvents;
+    }
+}
+
 connection.on("addMarker", function (x, y) {
-    addMarker(x, y);
+    addMarker(x, y, true);
 });
 
 // По нажатию кнопки на область прорисовки,
@@ -51,8 +62,9 @@ function addMarker(x, y, fill = false) {
 
     if (fill == true) {
         let eventMessage = 'Пользователь ' + login + ' добавил новый маркер с координатами {' + x + '; ' + y + '}';
-        connection.invoke("RecordEvent", login, eventMessage);
+        connection.invoke("RecordEvent", eventMessage);
     }
+    connection.send("UpdateEvents");
 }
 
 // Заполнение коллекции маркеров при загрузке страницы
@@ -192,7 +204,7 @@ function drawMarkersRoute() {
         // если последний, что рисуем маршрут от него до начального маркера
         let startX = markers[i][0], startY = markers[i][1];
         let finishX = 0, finishY = 0;
-        var optionid = ''; 
+         
         if (next != markers.length) {
             finishX = markers[next][0];
             finishY = markers[next][1];
@@ -292,7 +304,50 @@ function removeMarkerFromCanvas(markerIndex) {
             + '; ' + markers[selectedRemoveValue - 1][1] + '}';
     }
     fillMarkerSelection(true);
-    connection.invoke("RecordEvent", login, eventMessage);
+    connection.send("RecordEvent", eventMessage);
+    connection.send("UpdateEvents");
+}
+
+connection.on("updateEvents", function (tableEvents) {
+    updateEvents(tableEvents);
+});
+
+function updateEvents(tableEvents) {
+    if (tableEvents.length > 0) {
+        events = tableEvents;
+    }
+    updateEventTable();
+}
+
+function updateEventTable() {
+    var eventRows = document.getElementById('tableEventRows');
+
+    // Полностью очищаем таблицу
+    while (eventRows.childNodes.length > 0) {
+        eventRows.removeChild(eventRows.lastChild);
+    }
+
+    for (let i = 0; i < events.length; i++) {
+        var tr = document.createElement('tr');
+
+        var tdNameCell = document.createElement('td');
+        var tdNameText = document.createTextNode(events[0].userName);
+        tdNameCell.appendChild(tdNameText);
+
+        var tdDescCell = document.createElement('td');
+        var tdDescText = document.createTextNode(events[0].description);
+        tdDescCell.appendChild(tdDescText);
+
+        var tdTimeCell = document.createElement('td');
+        var tdTimeText = document.createTextNode(events[0].eventTime);
+        tdTimeCell.appendChild(tdTimeText);
+
+        tr.appendChild(tdNameCell);
+        tr.appendChild(tdDescCell);
+        tr.appendChild(tdTimeCell);
+
+        eventRows.appendChild(tr);
+    }
 }
 
 /**************************** Удаление маркеров ****************************/
@@ -333,7 +388,7 @@ document.getElementById('sendLogin').addEventListener('click', function (e) {
             // Включаем форму с выбором координат маркеров на удаление
             document.getElementById('selectionMarker').style.visibility = "visible";
             // Включаем форму с таблицей событий
-            document.getElementById('eventTable').style.visibility = "visible";
+            document.getElementById('eventTableDiv').style.visibility = "visible";
 
             // Если есть существующие координаты, то тащим их коллекцию markers.
             if (data.axes.length > 0) {
@@ -350,6 +405,7 @@ document.getElementById('sendLogin').addEventListener('click', function (e) {
             connection.start().then(function () {
                 // Фиксируем события нажатия кнопки мыши
                 canvas.addEventListener('mousedown', mouseDownEvent);
+                connection.send("UpdateEvents");
             });
         }
     });

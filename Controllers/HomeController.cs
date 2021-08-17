@@ -47,7 +47,7 @@ namespace LineRunnerApp.Controllers
 
             // Глупо сюда засовывать координаты 
             var markers = RunnerCollections.MarkerAxes;
-
+            
             return Json(new
             {
                 access_token = encodedJwt,
