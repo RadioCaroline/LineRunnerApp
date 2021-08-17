@@ -6,14 +6,12 @@
     <title>Öchpochmak Development</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.20/css/dataTables.bootstrap4.min.css" />
     <style>
         canvas {
             background-color: lightblue;
         }
     </style>
-
 </head>
 <body>
     <header>
@@ -47,29 +45,64 @@
                         </div>
                     </div>
                     <div class="w-100"></div>
-                    <table class="table table-striped table-bordered table-sm" id="eventTable" style="visibility: collapse;">
+                    <table id="tableEvent" class="table table-striped table-bordered" style="width:100%">
                         <thead>
                             <tr>
-                                <th class="th-sm" scope="col">Пользователь</th>
-                                <th class="th-sm" scope="col">Действие</th>
-                                <th class="th-sm" scope="col">Дата</th>
+                                <th>Пользователь</th>
+                                <th>Действие</th>
+                                <th>Дата</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tableEventRows">
                             <tr>
-                                <td>Mark</td>
-                                <td>Otto</td>
-                                <td>mdo</td>
+                                <td>Tiger Nixon</td>
+                                <td>System Architect</td>
+                                <td>Edinburgh</td>
                             </tr>
                             <tr>
-                                <td>Carry</td>
-                                <td>Green</td>
-                                <td>aky</td>
+                                <td>Garrett Winters</td>
+                                <td>Accountant</td>
+                                <td>Tokyo</td>
                             </tr>
                             <tr>
-                                <td>Gary</td>
-                                <td>Lewis</td>
-                                <td>mad</td>
+                                <td>Ashton Cox</td>
+                                <td>Junior Technical Author</td>
+                                <td>San Francisco</td>
+                            </tr>
+                            <tr>
+                                <td>Cedric Kelly</td>
+                                <td>Senior Javascript Developer</td>
+                                <td>Edinburgh</td>
+                            </tr>
+                            <tr>
+                                <td>Airi Satou</td>
+                                <td>Accountant</td>
+                                <td>Tokyo</td>
+                            </tr>
+                            <tr>
+                                <td>Brielle Williamson</td>
+                                <td>Integration Specialist</td>
+                                <td>New York</td>
+                            </tr>
+                            <tr>
+                                <td>Herrod Chandler</td>
+                                <td>Sales Assistant</td>
+                                <td>San Francisco</td>
+                            </tr>
+                            <tr>
+                                <td>Rhona Davidson</td>
+                                <td>Integration Specialist</td>
+                                <td>Tokyo</td>
+                            </tr>
+                            <tr>
+                                <td>Colleen Hurst</td>
+                                <td>Javascript Developer</td>
+                                <td>San Francisco</td>
+                            </tr>
+                            <tr>
+                                <td>Sonya Frost</td>
+                                <td>Software Engineer</td>
+                                <td>Edinburgh</td>
                             </tr>
                         </tbody>
                     </table>
@@ -89,9 +122,10 @@
             &copy; 2021 - LineRunnerApp
         </div>
     </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script src="~/js/runner.js"></script>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/site.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
