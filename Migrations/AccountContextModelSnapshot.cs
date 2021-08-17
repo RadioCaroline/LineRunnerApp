@@ -19,6 +19,24 @@ namespace LineRunnerApp.Migrations
                 .HasAnnotation("ProductVersion", "5.0.9")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
+            modelBuilder.Entity("LineRunnerApp.Models.AxeModel", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<double>("XPoint")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("YPoint")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Axes");
+                });
+
             modelBuilder.Entity("LineRunnerApp.Models.UserEventModel", b =>
                 {
                     b.Property<int>("Id")
@@ -66,7 +84,7 @@ namespace LineRunnerApp.Migrations
                         new
                         {
                             Id = 1,
-                            LastLogin = new DateTime(2021, 8, 16, 19, 29, 15, 54, DateTimeKind.Local).AddTicks(5213),
+                            LastLogin = new DateTime(2021, 8, 17, 16, 9, 47, 498, DateTimeKind.Local).AddTicks(4055),
                             Login = "Admin"
                         });
                 });

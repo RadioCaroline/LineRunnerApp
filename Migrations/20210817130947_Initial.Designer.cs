@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LineRunnerApp.Migrations
 {
     [DbContext(typeof(AccountContext))]
-    [Migration("20210816162915_Initial")]
+    [Migration("20210817130947_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,6 +20,24 @@ namespace LineRunnerApp.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
                 .HasAnnotation("ProductVersion", "5.0.9")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+            modelBuilder.Entity("LineRunnerApp.Models.AxeModel", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<double>("XPoint")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("YPoint")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Axes");
+                });
 
             modelBuilder.Entity("LineRunnerApp.Models.UserEventModel", b =>
                 {
@@ -68,7 +86,7 @@ namespace LineRunnerApp.Migrations
                         new
                         {
                             Id = 1,
-                            LastLogin = new DateTime(2021, 8, 16, 19, 29, 15, 54, DateTimeKind.Local).AddTicks(5213),
+                            LastLogin = new DateTime(2021, 8, 17, 16, 9, 47, 498, DateTimeKind.Local).AddTicks(4055),
                             Login = "Admin"
                         });
                 });

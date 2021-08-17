@@ -17,6 +17,7 @@ let nextMarkerIndex = 0;
 let speed = 3;
 // Индекс маркера на удаление
 let selectedRemoveIndex = 0;
+let lastSelect = '';
 //////////////////////////////////////
 
 const connection = new signalR.HubConnectionBuilder()
@@ -29,15 +30,22 @@ var context = canvas.getContext('2d');
 
 function sortHeadTable(event) {
     var target = event.target.id;
-    events.sort((v1, v2) => {
-        if (v1[target] < v2[target]) {
-            return -1;
-        }
-        if (v1[target] > v2[target]) {
-            return 1;
-        }
-        return 0;
-    });
+
+    if (target === lastSelect) {
+        events.reverse();
+    }
+    else {
+        events.sort((v1, v2) => {
+            if (v1[target] < v2[target]) {
+                return -1;
+            }
+            if (v1[target] > v2[target]) {
+                return 1;
+            }
+            return 0;
+        });
+        lastSelect = target;
+    }
     
     updateEventTable();
 }
@@ -259,49 +267,14 @@ function draw() {
 
     // Прорисовка маркеров для перемещения точек
     drawMarkersRoute();
-
-    // connection.invoke("draw");
 }
 // Интервал обновления изображения
 setInterval(draw, 10);
 
+/**************************** Удаление маркеров ****************************/
 connection.on("removeMarkerFromCanvas", function (markerIndex) {
     removeMarkerFromCanvas(markerIndex);
 });
-
-/**************************** Удаление маркеров ****************************/
-// Функция заполнения комбобокса с координатами маркеров для удаления
-function fillMarkerSelection(flush = false) {
-    // Получаем нужный селектор
-    var selectMarker = document.getElementById('markerSelect');
-
-    // Полностью его очищаем
-    while (selectMarker.childNodes.length > 0) {
-        selectMarker.removeChild(selectMarker.lastChild);
-    }
-
-    // Поумолчанию первым должен быть выбор все объектов
-    var option = document.createElement('option');
-    option.setAttribute("Value", 0);
-    let optionId = 'sdMarker' + 0;
-    option.setAttribute("id", optionId);
-    option.text = 'Выбрать все';
-    selectMarker.appendChild(option);
-
-    // Далее идем по коллекции маркеров и добавляем существущие маркеры 
-    if (markers.length != 0) {
-        for (let i = 0; i < markers.length; i++) {
-            let mlen = i + 1;
-
-            var option = document.createElement('option');
-            option.setAttribute("Value", mlen);
-            let optionId = 'sdMarker' + mlen;
-            option.setAttribute("id", optionId);
-            option.text = '{' + markers[i][0] + ';' + markers[i][1] + '}';
-            selectMarker.appendChild(option);
-        }
-    }
-}
 
 function removeMarkerFromCanvas(markerIndex) {
     let eventMessage = '';
@@ -334,6 +307,39 @@ function removeMarkerFromCanvas(markerIndex) {
     fillMarkerSelection(true);
     connection.send("RecordEvent", eventMessage);
     connection.send("UpdateEvents");
+}
+
+// Функция заполнения комбобокса с координатами маркеров для удаления
+function fillMarkerSelection(flush = false) {
+    // Получаем нужный селектор
+    var selectMarker = document.getElementById('markerSelect');
+
+    // Полностью его очищаем
+    while (selectMarker.childNodes.length > 0) {
+        selectMarker.removeChild(selectMarker.lastChild);
+    }
+
+    // Поумолчанию первым должен быть выбор все объектов
+    var option = document.createElement('option');
+    option.setAttribute("Value", 0);
+    let optionId = 'sdMarker' + 0;
+    option.setAttribute("id", optionId);
+    option.text = 'Выбрать все';
+    selectMarker.appendChild(option);
+
+    // Далее идем по коллекции маркеров и добавляем существущие маркеры 
+    if (markers.length != 0) {
+        for (let i = 0; i < markers.length; i++) {
+            let mlen = i + 1;
+
+            var option = document.createElement('option');
+            option.setAttribute("Value", mlen);
+            let optionId = 'sdMarker' + mlen;
+            option.setAttribute("id", optionId);
+            option.text = '{' + markers[i][0] + ';' + markers[i][1] + '}';
+            selectMarker.appendChild(option);
+        }
+    }
 }
 
 connection.on("updateEvents", function (tableEvents) {
@@ -426,7 +432,6 @@ document.getElementById('sendLogin').addEventListener('click', function (e) {
                     // Используем функцию addMarker 
                     // (флаг true нужен для того, чтобы отключить события занесения координат маркеров в базу данных)
                     addMarker(currentX, currentY, true);
-                    // markers.push([currentX, currentY]);
                 }
             }
 

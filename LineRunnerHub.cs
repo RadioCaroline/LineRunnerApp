@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,6 +26,13 @@ namespace LineRunnerApp
         {
             // Полученные координаты добавляем в общую коллекцию маркеров
             RunnerCollections.MarkerAxes.Add(new Tuple<double, double>(X, Y));
+            using AccountContext db = new();
+            db.Axes.Add(new AxeModel
+            {
+                XPoint = X,
+                YPoint = Y
+            });
+            await db.SaveChangesAsync();
 
             // Отправляем команду Добавить маркер для всех клиентов
             await Clients.All.SendAsync("addMarker", X, Y); 
@@ -61,13 +69,23 @@ namespace LineRunnerApp
         [Authorize]
         public async Task RemoveMarker(int selectedMarker, double X, double Y)
         {
+            using AccountContext db = new();
             if (selectedMarker == 0)
             {
                 RunnerCollections.MarkerAxes.RemoveRange(0, RunnerCollections.MarkerAxes.Count);
+                List<AxeModel> axes = await db.Axes.ToListAsync();
+                db.RemoveRange(axes);
+                await db.SaveChangesAsync();
             }
             else
             {
                 RunnerCollections.MarkerAxes.Remove(new Tuple<double, double>(X, Y));
+                AxeModel axe = await db.Axes.FirstOrDefaultAsync(a => a.XPoint == X && a.YPoint == Y);
+                if (axe != null)
+                {
+                    db.RemoveRange(axe);
+                    await db.SaveChangesAsync();
+                }
             }
             await Clients.All.SendAsync("removeMarkerFromCanvas", selectedMarker);
         }

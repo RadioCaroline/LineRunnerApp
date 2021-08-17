@@ -9,6 +9,20 @@ namespace LineRunnerApp.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Axes",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    XPoint = table.Column<double>(type: "double precision", nullable: false),
+                    YPoint = table.Column<double>(type: "double precision", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Axes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -46,7 +60,7 @@ namespace LineRunnerApp.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "LastLogin", "Login" },
-                values: new object[] { 1, new DateTime(2021, 8, 16, 19, 29, 15, 54, DateTimeKind.Local).AddTicks(5213), "Admin" });
+                values: new object[] { 1, new DateTime(2021, 8, 17, 16, 9, 47, 498, DateTimeKind.Local).AddTicks(4055), "Admin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Events_UserId",
@@ -56,6 +70,9 @@ namespace LineRunnerApp.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Axes");
+
             migrationBuilder.DropTable(
                 name: "Events");
 

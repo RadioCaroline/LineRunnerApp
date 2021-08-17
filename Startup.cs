@@ -1,3 +1,4 @@
+using LineRunnerApp.Helpers;
 using LineRunnerApp.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace LineRunnerApp
@@ -15,6 +17,9 @@ namespace LineRunnerApp
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            using AccountContext db = new();
+            RunnerCollections.MarkerAxes = 
+                db.Axes.Select(a => new System.Tuple<double, double>(a.XPoint, a.YPoint)).ToList();
         }
 
         public IConfiguration Configuration { get; }

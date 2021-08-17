@@ -9,6 +9,7 @@ namespace LineRunnerApp.Models
     {
         public DbSet<UserModel> Users { get; set; }
         public DbSet<UserEventModel> Events { get; set; }
+        public DbSet<AxeModel> Axes { get; set; }
 
         public AccountContext()
         {
