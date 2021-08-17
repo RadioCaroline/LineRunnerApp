@@ -16,7 +16,7 @@ let nextMarkerIndex = 0;
 // Скорость передвижения точки между маркерами
 let speed = 3;
 // Индекс маркера на удаление
-let selectedRemoveValue = 0;
+let selectedRemoveIndex = 0;
 //////////////////////////////////////
 
 const connection = new signalR.HubConnectionBuilder()
@@ -26,6 +26,25 @@ const connection = new signalR.HubConnectionBuilder()
 // Область изображения и контекст
 var canvas = document.getElementById('PaintPad');
 var context = canvas.getContext('2d');
+
+function sortHeadTable(event) {
+    var target = event.target.id;
+    events.sort((v1, v2) => {
+        if (v1[target] < v2[target]) {
+            return -1;
+        }
+        if (v1[target] > v2[target]) {
+            return 1;
+        }
+        return 0;
+    });
+    
+    updateEventTable();
+}
+
+document.getElementById('userName').addEventListener('click', sortHeadTable);
+document.getElementById('description').addEventListener('click', sortHeadTable);
+document.getElementById('eventTime').addEventListener('click', sortHeadTable);
 
 connection.on("updateTableEvents", function (tableEvents) {
     updateTableEvents(tableEvents);
@@ -61,7 +80,7 @@ function addMarker(x, y, fill = false) {
     fillMarkerSelection();
 
     if (fill == true) {
-        let eventMessage = 'Пользователь ' + login + ' добавил новый маркер с координатами {' + x + '; ' + y + '}';
+        let eventMessage = '*Добавление маркера* / Пользователь ' + login + ' добавил новый маркер с координатами {' + x + '; ' + y + '}';
         connection.invoke("RecordEvent", eventMessage);
     }
     connection.send("UpdateEvents");
@@ -114,6 +133,7 @@ function drawPoint(x, y) {
     context.fillStyle = "gray";
     context.fill();
     context.closePath();
+    connection.send("updatePointRoute", nextMarkerIndex, x, y);
 }
 
 // Перерисовка изображения
@@ -156,18 +176,26 @@ function refreshPoint() {
                 nextMarkerIndex += 1;
             }
         }
+
+        connection.send("UpdatePointRoute", nextMarkerIndex);
     } 
+}
+
+function updatePointRoute(nextMarker, X, Y) {
+    pointX = X;
+    pointY = Y;
+    nextMarkerIndex = nextMarker;
 }
 
 // Рисуем маркер в области нажатия левой кнопки мыши
 function drawMarker(mx, my) {
-    selectedRemoveValue = parseInt(document.getElementById('markerSelect').value);
+    selectedRemoveIndex = parseInt(document.getElementById('markerSelect').value);
     context.beginPath();
     // Если выбран какой-то маркер на удаление, 
     // он выделяется красным цветом и бОльшим размером
-    if (selectedRemoveValue > 0 &&
-        markers[selectedRemoveValue - 1][0] == mx &&
-        markers[selectedRemoveValue - 1][1] == my) {
+    if (selectedRemoveIndex > 0 &&
+        markers[selectedRemoveIndex - 1][0] == mx &&
+        markers[selectedRemoveIndex - 1][1] == my) {
         // Параметры удаляемого маркера
         context.arc(mx, my, 15, 0, Math.PI * 2);
         // Цвет удаляемого маркера
@@ -299,9 +327,9 @@ function removeMarkerFromCanvas(markerIndex) {
         }
 
         markers.splice(markerIndex - 1, 1);
-        eventMessage = 'Пользователь ' + login
-            + ' удалил маркер с координатами {' + markers[selectedRemoveValue - 1][0]
-            + '; ' + markers[selectedRemoveValue - 1][1] + '}';
+        eventMessage = '*Удаление маркера* / Пользователь ' + login
+            + ' удалил маркер с координатами {' + markers[selectedRemoveIndex - 1][0]
+            + '; ' + markers[selectedRemoveIndex - 1][1] + '}';
     }
     fillMarkerSelection(true);
     connection.send("RecordEvent", eventMessage);
@@ -331,15 +359,15 @@ function updateEventTable() {
         var tr = document.createElement('tr');
 
         var tdNameCell = document.createElement('td');
-        var tdNameText = document.createTextNode(events[0].userName);
+        var tdNameText = document.createTextNode(events[i].userName);
         tdNameCell.appendChild(tdNameText);
 
         var tdDescCell = document.createElement('td');
-        var tdDescText = document.createTextNode(events[0].description);
+        var tdDescText = document.createTextNode(events[i].description);
         tdDescCell.appendChild(tdDescText);
 
         var tdTimeCell = document.createElement('td');
-        var tdTimeText = document.createTextNode(events[0].eventTime);
+        var tdTimeText = document.createTextNode(events[i].eventTime);
         tdTimeCell.appendChild(tdTimeText);
 
         tr.appendChild(tdNameCell);
@@ -353,14 +381,14 @@ function updateEventTable() {
 /**************************** Удаление маркеров ****************************/
 // Нажатие кнопки Удалить маркер
 document.getElementById('removeMarker').addEventListener('click', function (e) {
-    if (selectedRemoveValue == 0) {
-        connection.invoke("RemoveMarker", selectedRemoveValue, 0.0, 0.0);
+    if (selectedRemoveIndex == 0) {
+        connection.invoke("RemoveMarker", selectedRemoveIndex, 0.0, 0.0);
     }
     else {
         connection.invoke("RemoveMarker",
-            selectedRemoveValue,
-            markers[selectedRemoveValue - 1][0],
-            markers[selectedRemoveValue - 1][1]);
+            selectedRemoveIndex,
+            markers[selectedRemoveIndex - 1][0],
+            markers[selectedRemoveIndex - 1][1]);
     }
 });
 

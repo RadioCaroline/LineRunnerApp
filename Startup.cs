@@ -22,6 +22,7 @@ namespace LineRunnerApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Добавляем авторизацию
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -42,12 +43,10 @@ namespace LineRunnerApp
                         {
                             var accessToken = context.Request.Query["access_token"];
 
-                            // если запрос направлен хабу
                             var path = context.HttpContext.Request.Path;
                             if (!string.IsNullOrEmpty(accessToken) &&
                                 (path.StartsWithSegments("/hubs")))
                             {
-                                // получаем токен из строки запроса
                                 context.Token = accessToken;
                             }
                             return Task.CompletedTask;

@@ -101,7 +101,7 @@ namespace LineRunnerApp.Controllers
             db.Events.Add(new UserEventModel
             {
                 UserId = person.Id,
-                Description = "Пользователь " + person.Login + " авторизовался.",
+                Description = "*Авторизация* / Пользователь " + person.Login + " авторизовался.",
                 EventTime = DateTime.Now
             });
             await db.SaveChangesAsync();

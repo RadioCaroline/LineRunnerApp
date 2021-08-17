@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Öchpochmak Development</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.20/css/dataTables.bootstrap4.min.css" />
     <style>
         canvas {
             background-color: lightblue;
+        }
+        th {
+            cursor: pointer;
         }
     </style>
 </head>
@@ -49,13 +50,13 @@
                         <table id="tableEvent" class="table table-striped table-bordered" style="width:100%">
                             <thead>
                                 <tr>
-                                    <th>Пользователь</th>
-                                    <th>Действие</th>
-                                    <th>Дата</th>
+                                    <th id="userName">Пользователь</th>
+                                    <th id="description">Действие</th>
+                                    <th id="eventTime">Дата</th>
                                 </tr>
                             </thead>
                             <tbody id="tableEventRows">
-                                
+                                <!-- Данные таблицы загружаются из коллекции событий из базы данных -->
                             </tbody>
                         </table>
                     </div>
@@ -81,7 +82,5 @@
     <script src="~/js/runner.js"></script>
     <script src="~/js/site.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
 </body>
 </html>

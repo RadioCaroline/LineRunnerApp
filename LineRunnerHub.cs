@@ -84,16 +84,17 @@ namespace LineRunnerApp
                 {
                     UserName = e.User.Login,
                     Description = e.Description,
-                    EventTime = e.EventTime.ToString()
+                    EventTime = e.EventTime.ToString("dd.MM.yyyy hh:mm:ss")
                 })
                 .ToListAsync();
                
             await Clients.All.SendAsync("updateEvents", RunnerCollections.Events);
         }
 
-        public async Task Draw()
+        [Authorize]
+        public async Task UpdatePointRoute(int nextMarkerIndex, double X, double Y)
         {
-            await Clients.All.SendAsync("draw");
+            await Clients.All.SendAsync("updatePointRoute", nextMarkerIndex, X, Y);
         }
     }
 }
